@@ -121,6 +121,22 @@
 
     <build>
         <plugins>
+            <!-- Explicit Lombok annotation processor — fixes Lombok-generated methods
+                 not being visible when dependent classes are compiled in the same pass -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+
             <!-- Spring Boot Maven Plugin — builds the executable JAR -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -137,5 +153,6 @@
             </plugin>
         </plugins>
     </build>
+
 
 </project>
