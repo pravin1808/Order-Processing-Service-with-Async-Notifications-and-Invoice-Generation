@@ -1,10 +1,115 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import AppLayout from '../components/layout/AppLayout';
+import OrderListPanel from '../components/orders/OrderListPanel';
+import OrderDetailPanel from '../components/orders/OrderDetailPanel';
+import CreateOrderDrawer from '../components/orders/CreateOrderDrawer';
+import { getOrders, getOrderById } from '../api/orders';
 
 export const OrdersPage = () => {
+  const { id: urlOrderId } = useParams();
+  const navigate = useNavigate();
+
+  const [orders, setOrders] = useState([]);
+  const [listLoading, setListLoading] = useState(true);
+  const [listError, setListError] = useState('');
+
+  const [selectedOrderId, setSelectedOrderId] = useState(urlOrderId || null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState('');
+
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  // Load orders list
+  const fetchOrders = async (preserveSelectedId = null) => {
+    try {
+      setListLoading(true);
+      setListError('');
+      const data = await getOrders({ page: 0, size: 50 });
+      const orderList = data.content || [];
+      setOrders(orderList);
+
+      // Determine which order to select
+      const targetId = preserveSelectedId || selectedOrderId || urlOrderId;
+      if (targetId && orderList.some((o) => o.id === targetId)) {
+        handleSelectOrder(targetId);
+      } else if (orderList.length > 0) {
+        handleSelectOrder(orderList[0].id);
+      } else {
+        setSelectedOrder(null);
+        setSelectedOrderId(null);
+      }
+    } catch (err) {
+      setListError(err.response?.data?.message || 'Failed to load orders.');
+    } finally {
+      setListLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  // Fetch full order details when selectedOrderId changes
+  const handleSelectOrder = async (orderId) => {
+    setSelectedOrderId(orderId);
+    navigate(`/orders/${orderId}`, { replace: true });
+
+    try {
+      setDetailLoading(true);
+      setDetailError('');
+      const fullOrder = await getOrderById(orderId);
+      setSelectedOrder(fullOrder);
+    } catch (err) {
+      setDetailError(err.response?.data?.message || 'Could not load order details');
+      setSelectedOrder(null);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  // Callback when status is updated by admin
+  const handleStatusUpdated = (updatedOrder) => {
+    setSelectedOrder(updatedOrder);
+    setOrders((prev) =>
+      prev.map((ord) =>
+        ord.id === updatedOrder.id ? { ...ord, status: updatedOrder.status } : ord
+      )
+    );
+  };
+
+  // Callback when a new order is created from the drawer
+  const handleOrderCreated = (newOrder) => {
+    fetchOrders(newOrder.id);
+  };
+
   return (
-    <div style={{ padding: 'var(--space-6)' }}>
-      <h1>My Orders</h1>
-    </div>
+    <AppLayout onCreateOrderClick={() => setIsDrawerOpen(true)}>
+      <div className="two-pane">
+        <OrderListPanel
+          orders={orders}
+          selectedOrderId={selectedOrderId}
+          onSelectOrder={handleSelectOrder}
+          loading={listLoading}
+          onRefresh={() => fetchOrders(selectedOrderId)}
+          onCreateOrder={() => setIsDrawerOpen(true)}
+        />
+
+        <OrderDetailPanel
+          order={selectedOrder}
+          loading={detailLoading}
+          error={detailError || listError}
+          onStatusUpdated={handleStatusUpdated}
+        />
+      </div>
+
+      <CreateOrderDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        onOrderCreated={handleOrderCreated}
+      />
+    </AppLayout>
   );
 };
 
