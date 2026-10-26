@@ -1,10 +1,206 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import AppLayout from '../components/layout/AppLayout';
+import StatCard from '../components/dashboard/StatCard';
+import AdminOrderTable from '../components/dashboard/AdminOrderTable';
+import OrderDetailPanel from '../components/orders/OrderDetailPanel';
+import { getOrders, getOrderById, exportOrdersCsv } from '../api/orders';
+import { formatCurrency } from '../components/orders/OrderItemsTable';
 
 export const DashboardPage = () => {
+  const [orders, setOrders] = useState([]);
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalElements, setTotalElements] = useState(0);
+  const [statusFilter, setStatusFilter] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
+
+  // Selected Order for side inspection panel
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState('');
+
+  const fetchOrders = async (targetPage = page, targetSize = size, targetStatus = statusFilter) => {
+    try {
+      setLoading(true);
+      const params = {
+        page: targetPage,
+        size: targetSize,
+        sort: 'createdAt,desc',
+      };
+      if (targetStatus) {
+        params.status = targetStatus;
+      }
+
+      const res = await getOrders(params);
+      const list = res.content || [];
+      setOrders(list);
+      setTotalPages(res.totalPages || 1);
+      setTotalElements(res.totalElements || 0);
+
+      // Auto-select first order if none selected or current is out of range
+      if (list.length > 0 && (!selectedOrderId || !list.some((o) => o.id === selectedOrderId))) {
+        handleSelectOrder(list[0].id);
+      }
+    } catch (err) {
+      console.error('Failed to load admin orders', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders(page, size, statusFilter);
+  }, [page, size, statusFilter]);
+
+  const handleSelectOrder = async (orderId) => {
+    setSelectedOrderId(orderId);
+    try {
+      setDetailLoading(true);
+      setDetailError('');
+      const full = await getOrderById(orderId);
+      setSelectedOrder(full);
+    } catch (err) {
+      setDetailError('Failed to load order details');
+      setSelectedOrder(null);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const handleOrderUpdated = (updatedOrder) => {
+    // Update in local table
+    setOrders((prev) =>
+      prev.map((o) => (o.id === updatedOrder.id ? { ...o, status: updatedOrder.status } : o))
+    );
+    if (selectedOrderId === updatedOrder.id) {
+      setSelectedOrder(updatedOrder);
+    }
+  };
+
+  const handleExportCsv = async () => {
+    try {
+      setExporting(true);
+      await exportOrdersCsv();
+    } catch (err) {
+      alert('Failed to export CSV. Please try again.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // Calculate quick dashboard stats
+  const pendingCount = orders.filter((o) => o.status === 'PENDING').length;
+  const inTransitCount = orders.filter((o) => o.status === 'CONFIRMED' || o.status === 'SHIPPED').length;
+  const totalRevenue = orders.reduce((acc, curr) => acc + (parseFloat(curr.total) || 0), 0);
+
   return (
-    <div style={{ padding: 'var(--space-6)' }}>
-      <h1>Admin Dashboard</h1>
-    </div>
+    <AppLayout>
+      <div className="page" style={{ maxWidth: '1600px' }}>
+        {/* Page Header */}
+        <div className="page-header" style={{ flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+          <div>
+            <h1>Admin Operations Dashboard</h1>
+            <p className="text-secondary text-sm">
+              Real-time order fulfillment, customer status transitions, and accounting
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={handleExportCsv}
+              disabled={exporting}
+            >
+              {exporting ? 'Generating CSV...' : '📥 Export All Orders (CSV)'}
+            </button>
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="stat-cards">
+          <StatCard
+            label="Total Orders"
+            value={totalElements}
+            sub="Across all channels"
+            icon="📊"
+          />
+          <StatCard
+            label="Pending Action"
+            value={pendingCount}
+            sub="Needs fulfillment confirmation"
+            icon="⏳"
+            highlightColor="var(--status-pending-dot)"
+          />
+          <StatCard
+            label="In Transit"
+            value={inTransitCount}
+            sub="Confirmed & Out for delivery"
+            icon="🚚"
+            highlightColor="var(--status-confirmed-dot)"
+          />
+          <StatCard
+            label="Batch Revenue"
+            value={formatCurrency(totalRevenue)}
+            sub="Active view gross total"
+            icon="💳"
+            highlightColor="var(--status-delivered-dot)"
+          />
+        </div>
+
+        {/* Two Column Layout: Orders Table + Live Inspection Panel */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: selectedOrder ? '1fr 480px' : '1fr',
+          gap: 'var(--space-6)',
+          alignItems: 'start',
+        }}>
+          {/* Main Orders Table */}
+          <AdminOrderTable
+            orders={orders}
+            totalElements={totalElements}
+            page={page}
+            size={size}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            onSizeChange={(newSize) => {
+              setSize(newSize);
+              setPage(0);
+            }}
+            statusFilter={statusFilter}
+            onStatusFilterChange={(st) => {
+              setStatusFilter(st);
+              setPage(0);
+            }}
+            loading={loading}
+            selectedOrderId={selectedOrderId}
+            onSelectOrder={handleSelectOrder}
+            onOrderUpdated={handleOrderUpdated}
+            onRefresh={() => fetchOrders(page, size, statusFilter)}
+          />
+
+          {/* Right Inspection Panel */}
+          {selectedOrder && (
+            <div style={{
+              position: 'sticky',
+              top: 'calc(var(--navbar-h) + var(--space-4))',
+              maxHeight: 'calc(100vh - var(--navbar-h) - var(--space-8))',
+              overflowY: 'auto',
+            }}>
+              <OrderDetailPanel
+                order={selectedOrder}
+                loading={detailLoading}
+                error={detailError}
+                onStatusUpdated={handleOrderUpdated}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </AppLayout>
   );
 };
 
