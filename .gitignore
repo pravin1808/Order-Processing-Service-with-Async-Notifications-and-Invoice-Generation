@@ -1,0 +1,248 @@
+# =============================================================================
+# ROOT .gitignore — Order Processing Service Monorepo
+# Covers: Java/Spring Boot backend + React/Vite frontend + OS + IDE + Docker
+# =============================================================================
+
+
+# =============================================================================
+# JAVA / MAVEN (Backend)
+# =============================================================================
+
+# Maven build output
+**/target/
+**/pom.xml.tag
+**/pom.xml.releaseBackup
+**/pom.xml.versionsBackup
+**/pom.xml.next
+**/release.properties
+**/dependency-reduced-pom.xml
+**/buildNumber.properties
+**/.mvn/timing.properties
+
+# Maven wrapper jar (downloaded at runtime — do not commit)
+**/.mvn/wrapper/maven-wrapper.jar
+
+# Spring Boot exploded jar
+**/spring-boot-devtools*.jar
+
+# Compiled class files
+**/*.class
+
+# JAR / WAR / EAR
+**/*.jar
+**/*.war
+**/*.ear
+**/*.nar
+
+# Log files
+**/*.log
+**/logs/
+
+# Checkstyle / PMD / SpotBugs reports
+**/checkstyle-result.xml
+**/pmd.xml
+
+# JaCoCo coverage reports
+**/jacoco.exec
+**/jacoco/
+
+# Surefire & Failsafe test reports
+**/surefire-reports/
+**/failsafe-reports/
+
+
+# =============================================================================
+# NODE / NPM / VITE / REACT (Frontend)
+# =============================================================================
+
+# Dependencies — always reinstalled via npm install
+**/node_modules/
+
+# Vite build output
+**/dist/
+**/dist-ssr/
+
+# Parcel cache
+**/.cache/
+**/.parcel-cache/
+
+# npm / yarn / pnpm debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Optional npm cache
+.npm
+
+# Vite env files with secrets (keep .env.example)
+**/.env
+**/.env.local
+**/.env.development.local
+**/.env.test.local
+**/.env.production.local
+
+# TypeScript build info
+**/*.tsbuildinfo
+
+
+# =============================================================================
+# ENVIRONMENT & SECRETS
+# =============================================================================
+
+# Environment variable files — NEVER commit secrets
+.env
+.env.*
+!.env.example
+!.env.template
+
+# Application properties with local overrides
+**/application-local.properties
+**/application-local.yml
+**/application-dev.properties
+
+
+# =============================================================================
+# DATABASE
+# =============================================================================
+
+# Local database dumps (keep schema.sql which is intentionally committed)
+*.dump
+*.sql.gz
+*.bak
+
+# H2 local database files
+*.db
+*.mv.db
+*.trace.db
+
+
+# =============================================================================
+# PDF / GENERATED INVOICE FILES
+# =============================================================================
+
+# Locally generated invoices
+**/invoices/
+**/*.pdf
+
+
+# =============================================================================
+# DOCKER
+# =============================================================================
+
+# Docker override files (local dev overrides)
+docker-compose.override.yml
+docker-compose.local.yml
+
+# Docker environment files
+.docker/
+
+
+# =============================================================================
+# INTELLIJ IDEA
+# =============================================================================
+
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# IntelliJ shelf (local changes stash)
+.idea/shelf/
+
+# IntelliJ workspace (local settings)
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/dictionaries/
+.idea/shelf/
+
+
+# =============================================================================
+# ECLIPSE / STS (Spring Tool Suite)
+# =============================================================================
+
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+bin/
+
+
+# =============================================================================
+# VS CODE
+# =============================================================================
+
+# Keep extensions.json (useful for team), ignore everything else
+.vscode/*
+!.vscode/extensions.json
+
+# VS Code workspace settings that are machine-specific
+*.code-workspace
+
+
+# =============================================================================
+# NETBEANS
+# =============================================================================
+
+/nbproject/private/
+/nbbuild/
+/nbdist/
+/.nb-gradle/
+
+
+# =============================================================================
+# OPERATING SYSTEM
+# =============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+
+
+# =============================================================================
+# MISC
+# =============================================================================
+
+# Compiled Thymeleaf templates cache
+**/templates-cache/
+
+# JVM crash logs
+hs_err_pid*
+replay_pid*
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*.bak
+
+# Archive files (unless intentionally committed)
+*.zip
+*.tar.gz
+*.tar
+*.rar
+
+# HELP.md (generated by Spring Initializr — not useful in repo)
+**/HELP.md
