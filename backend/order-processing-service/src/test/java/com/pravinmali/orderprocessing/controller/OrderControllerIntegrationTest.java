@@ -25,6 +25,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import org.springframework.security.test.context.support.WithMockUser;
+
 /**
  * Full-stack integration tests using H2 in-memory database.
  *
@@ -33,11 +35,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * <p>Uses the "test" profile which activates {@code application-test.properties}
  * (H2, create-drop DDL, disabled SpringDoc).</p>
+ *
+ * <p>{@code @WithMockUser(roles = "ADMIN")} — runs all tests with an authenticated
+ * ADMIN principal so Spring Security passes all requests to the controller layer.</p>
  */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@WithMockUser(roles = "ADMIN")
 class OrderControllerIntegrationTest {
 
     @Autowired MockMvc mockMvc;

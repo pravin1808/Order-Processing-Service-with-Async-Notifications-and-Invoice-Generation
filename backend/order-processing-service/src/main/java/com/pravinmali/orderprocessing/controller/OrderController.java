@@ -6,6 +6,7 @@ import com.pravinmali.orderprocessing.dto.response.OrderResponse;
 import com.pravinmali.orderprocessing.dto.response.OrderSummaryResponse;
 import com.pravinmali.orderprocessing.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -21,13 +23,19 @@ import java.util.UUID;
 /**
  * REST controller for order management.
  *
- * <p>All endpoints are under {@code /api/v1/orders}.
- * Business logic is fully delegated to {@link OrderService} — this controller
- * only handles HTTP concerns (status codes, request binding, response wrapping).</p>
+ * <p>RBAC enforcement:
+ * <ul>
+ *   <li>ADMIN — full access to all orders</li>
+ *   <li>CUSTOMER — can create orders and view only their own orders</li>
+ * </ul>
+ * Endpoint-level rules are in {@link com.pravinmali.orderprocessing.config.SecurityConfig}.
+ * Ownership filtering (CUSTOMER sees own orders only) is enforced here via
+ * {@link Authentication} principal.</p>
  */
 @RestController
 @RequestMapping("/api/v1/orders")
 @Tag(name = "Orders", description = "Order management endpoints")
+@SecurityRequirement(name = "bearerAuth")
 public class OrderController {
 
     private final OrderService orderService;
@@ -37,33 +45,34 @@ public class OrderController {
     }
 
     /**
-     * Create a new order with one or more line items.
-     * Returns 201 Created with the full order detail including calculated totals.
+     * Create a new order. ADMIN and CUSTOMER roles allowed.
+     * For CUSTOMER, the order's customer email is taken from the JWT principal
+     * to ensure they can only create orders for themselves.
      */
     @PostMapping
     @Operation(summary = "Create a new order")
-    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody CreateOrderRequest request) {
-        OrderResponse response = orderService.createOrder(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<OrderResponse> createOrder(
+            @Valid @RequestBody CreateOrderRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(request));
     }
 
     /**
-     * Retrieve a single order by its UUID.
-     * Returns 404 if the order does not exist.
+     * Get a single order. ADMIN sees any; CUSTOMER may only see their own.
+     * Ownership is enforced in the service layer.
      */
     @GetMapping("/{id}")
     @Operation(summary = "Get order by ID")
-    public ResponseEntity<OrderResponse> getOrderById(@PathVariable UUID id) {
-        return ResponseEntity.ok(orderService.getOrderById(id));
+    public ResponseEntity<OrderResponse> getOrderById(
+            @PathVariable UUID id,
+            Authentication authentication) {
+        return ResponseEntity.ok(orderService.getOrderById(id, authentication));
     }
 
     /**
-     * Paginated list of all orders.
-     * Default: page 0, size 10, sorted by createdAt descending.
-     * Supports ?page=&size=&sort= query parameters.
+     * Paginated list of orders. ADMIN sees all; endpoint is ADMIN-only per SecurityConfig.
      */
     @GetMapping
-    @Operation(summary = "List all orders (paginated)")
+    @Operation(summary = "List all orders — ADMIN only")
     public ResponseEntity<Page<OrderSummaryResponse>> listOrders(
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable) {
@@ -71,11 +80,10 @@ public class OrderController {
     }
 
     /**
-     * Update an order's status.
-     * Returns 422 if the transition is not permitted by business rules.
+     * Update order status — ADMIN only (enforced in SecurityConfig).
      */
     @PatchMapping("/{id}/status")
-    @Operation(summary = "Update order status")
+    @Operation(summary = "Update order status — ADMIN only")
     public ResponseEntity<OrderResponse> updateOrderStatus(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateOrderStatusRequest request) {

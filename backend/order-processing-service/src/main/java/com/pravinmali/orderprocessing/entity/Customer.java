@@ -11,7 +11,10 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Represents a customer in the system.
+ * Represents a customer / user in the system.
+ *
+ * <p>Keeps customer profile data and authentication credentials together.
+ * When JWT auth is active the {@code email} field acts as the username.</p>
  */
 @Entity
 @Table(
@@ -42,6 +45,15 @@ public class Customer {
 
     @Column(length = 500)
     private String address;
+
+    /** BCrypt-hashed password — never exposed in any DTO. */
+    @Column(name = "password_hash")
+    private String passwordHash;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private Role role = Role.CUSTOMER;
 
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
     @Builder.Default

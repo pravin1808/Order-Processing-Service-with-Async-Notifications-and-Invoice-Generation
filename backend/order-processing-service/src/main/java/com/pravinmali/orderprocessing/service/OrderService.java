@@ -31,6 +31,10 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
 /**
  * Core business logic for order management.
  *
@@ -127,9 +131,26 @@ public class OrderService {
     // =========================================================================
 
     @Transactional(readOnly = true)
-    public OrderResponse getOrderById(UUID orderId) {
+    public OrderResponse getOrderById(UUID orderId, Authentication authentication) {
         Order order = findOrderOrThrow(orderId);
+
+        // CUSTOMER can only see their own orders
+        boolean isCustomerRole = authentication != null &&
+                authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
+        if (isCustomerRole) {
+            String principalEmail = authentication.getName();
+            if (!order.getCustomer().getEmail().equals(principalEmail)) {
+                throw new AccessDeniedException("You do not have access to this order");
+            }
+        }
+
         return toOrderResponse(order);
+    }
+
+    // Backward-compatible overload for tests and internal callers
+    @Transactional(readOnly = true)
+    public OrderResponse getOrderById(UUID orderId) {
+        return toOrderResponse(findOrderOrThrow(orderId));
     }
 
     @Transactional(readOnly = true)
