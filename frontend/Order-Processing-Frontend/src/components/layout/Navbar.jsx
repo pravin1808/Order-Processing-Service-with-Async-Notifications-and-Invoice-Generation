@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { exportOrdersCsv } from '../../api/orders';
 import '../../styles/navbar.css';
 
-export const Navbar = ({ onCreateOrderClick }) => {
+export const Navbar = ({ onCreateOrderClick, onOpenBatchDrawer }) => {
   const { user, isAdmin, isCustomer, logout } = useAuth();
   const navigate = useNavigate();
   const [exporting, setExporting] = useState(false);
@@ -55,6 +55,23 @@ export const Navbar = ({ onCreateOrderClick }) => {
       </div>
 
       <div className="navbar-actions">
+        {/* Batch Generator Shortcut */}
+        {onOpenBatchDrawer && (
+          <button
+            type="button"
+            className="btn btn-sm"
+            style={{
+              background: 'rgba(255, 255, 255, 0.08)',
+              color: '#F3F4F6',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+            }}
+            onClick={onOpenBatchDrawer}
+            title="Preview and place multiple pre-configured orders at once"
+          >
+            ⚡ Batch Presets
+          </button>
+        )}
+
         {/* Customer CTA to open drawer */}
         {isCustomer && onCreateOrderClick && (
           <button

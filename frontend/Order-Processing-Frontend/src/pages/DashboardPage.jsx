@@ -3,6 +3,7 @@ import AppLayout from '../components/layout/AppLayout';
 import StatCard from '../components/dashboard/StatCard';
 import AdminOrderTable from '../components/dashboard/AdminOrderTable';
 import OrderDetailPanel from '../components/orders/OrderDetailPanel';
+import BatchOrderDrawer from '../components/orders/BatchOrderDrawer';
 import { getOrders, getOrderById, exportOrdersCsv } from '../api/orders';
 import { formatCurrency } from '../components/orders/OrderItemsTable';
 
@@ -15,6 +16,7 @@ export const DashboardPage = () => {
   const [statusFilter, setStatusFilter] = useState(null);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [isBatchOpen, setIsBatchOpen] = useState(false);
 
   // Selected Order for side inspection panel
   const [selectedOrderId, setSelectedOrderId] = useState(null);
@@ -97,7 +99,7 @@ export const DashboardPage = () => {
   const totalRevenue = orders.reduce((acc, curr) => acc + (parseFloat(curr.total) || 0), 0);
 
   return (
-    <AppLayout>
+    <AppLayout onOpenBatchDrawer={() => setIsBatchOpen(true)}>
       <div className="page" style={{ maxWidth: '1600px' }}>
         {/* Page Header */}
         <div className="page-header" style={{ flexWrap: 'wrap', gap: 'var(--space-3)' }}>
@@ -109,6 +111,13 @@ export const DashboardPage = () => {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={() => setIsBatchOpen(true)}
+            >
+              ⚡ Batch Order Presets
+            </button>
             <button
               type="button"
               className="btn btn-primary btn-sm"
@@ -200,6 +209,12 @@ export const DashboardPage = () => {
           )}
         </div>
       </div>
+
+      <BatchOrderDrawer
+        isOpen={isBatchOpen}
+        onClose={() => setIsBatchOpen(false)}
+        onBatchCreated={() => fetchOrders(page, size, statusFilter)}
+      />
     </AppLayout>
   );
 };

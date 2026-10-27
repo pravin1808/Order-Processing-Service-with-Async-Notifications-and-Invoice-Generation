@@ -4,6 +4,7 @@ import AppLayout from '../components/layout/AppLayout';
 import OrderListPanel from '../components/orders/OrderListPanel';
 import OrderDetailPanel from '../components/orders/OrderDetailPanel';
 import CreateOrderDrawer from '../components/orders/CreateOrderDrawer';
+import BatchOrderDrawer from '../components/orders/BatchOrderDrawer';
 import { getOrders, getOrderById } from '../api/orders';
 
 export const OrdersPage = () => {
@@ -20,6 +21,7 @@ export const OrdersPage = () => {
   const [detailError, setDetailError] = useState('');
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isBatchDrawerOpen, setIsBatchDrawerOpen] = useState(false);
 
   // Load orders list
   const fetchOrders = async (preserveSelectedId = null) => {
@@ -85,7 +87,10 @@ export const OrdersPage = () => {
   };
 
   return (
-    <AppLayout onCreateOrderClick={() => setIsDrawerOpen(true)}>
+    <AppLayout
+      onCreateOrderClick={() => setIsDrawerOpen(true)}
+      onOpenBatchDrawer={() => setIsBatchDrawerOpen(true)}
+    >
       <div className="two-pane">
         <OrderListPanel
           orders={orders}
@@ -108,6 +113,12 @@ export const OrdersPage = () => {
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
         onOrderCreated={handleOrderCreated}
+      />
+
+      <BatchOrderDrawer
+        isOpen={isBatchDrawerOpen}
+        onClose={() => setIsBatchDrawerOpen(false)}
+        onBatchCreated={() => fetchOrders()}
       />
     </AppLayout>
   );
