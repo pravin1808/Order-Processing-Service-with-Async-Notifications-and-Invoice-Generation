@@ -34,35 +34,33 @@ public class DataInitializer implements CommandLineRunner {
 
     private void seedAdminUser() {
         String adminEmail = "admin@orderflow.com";
-        if (customerRepository.findByEmail(adminEmail).isEmpty()) {
-            Customer admin = Customer.builder()
-                    .name("System Admin")
-                    .email(adminEmail)
-                    .passwordHash(passwordEncoder.encode("Admin@1234"))
-                    .phone("+91 99999 00000")
-                    .address("Headquarters, Pune")
-                    .role(Role.ADMIN)
-                    .build();
+        Customer admin = customerRepository.findByEmail(adminEmail)
+                .orElseGet(() -> Customer.builder()
+                        .name("System Admin")
+                        .email(adminEmail)
+                        .phone("+91 99999 00000")
+                        .address("Headquarters, Pune")
+                        .role(Role.ADMIN)
+                        .build());
 
-            customerRepository.save(admin);
-            log.info("Initialized default ADMIN account: {}", adminEmail);
-        }
+        admin.setPasswordHash(passwordEncoder.encode("Admin@1234"));
+        customerRepository.save(admin);
+        log.info("Initialized and synchronized default ADMIN account: {}", adminEmail);
     }
 
     private void seedCustomerUser() {
         String customerEmail = "pravin@example.com";
-        if (customerRepository.findByEmail(customerEmail).isEmpty()) {
-            Customer customer = Customer.builder()
-                    .name("Pravin Mali")
-                    .email(customerEmail)
-                    .passwordHash(passwordEncoder.encode("Pass@1234"))
-                    .phone("+91 98765 43210")
-                    .address("FC Road, Pune, Maharashtra - 411004")
-                    .role(Role.CUSTOMER)
-                    .build();
+        Customer customer = customerRepository.findByEmail(customerEmail)
+                .orElseGet(() -> Customer.builder()
+                        .name("Pravin Mali")
+                        .email(customerEmail)
+                        .phone("+91 98765 43210")
+                        .address("FC Road, Pune, Maharashtra - 411004")
+                        .role(Role.CUSTOMER)
+                        .build());
 
-            customerRepository.save(customer);
-            log.info("Initialized default CUSTOMER account: {}", customerEmail);
-        }
+        customer.setPasswordHash(passwordEncoder.encode("Pass@1234"));
+        customerRepository.save(customer);
+        log.info("Initialized and synchronized default CUSTOMER account: {}", customerEmail);
     }
 }
