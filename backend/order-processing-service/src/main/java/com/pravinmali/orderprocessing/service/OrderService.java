@@ -158,6 +158,24 @@ public class OrderService {
         return orderRepository.findAll(pageable).map(this::toOrderSummaryResponse);
     }
 
+    @Transactional(readOnly = true)
+    public Page<OrderSummaryResponse> listOrders(Pageable pageable, OrderStatus status, Authentication authentication) {
+        boolean isCustomer = authentication != null &&
+                authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
+        if (isCustomer) {
+            String email = authentication.getName();
+            return customerRepository.findByEmail(email)
+                    .map(cust -> orderRepository.findByCustomer(cust, pageable).map(this::toOrderSummaryResponse))
+                    .orElse(Page.empty(pageable));
+        }
+
+        if (status != null) {
+            return orderRepository.findByStatus(status, pageable).map(this::toOrderSummaryResponse);
+        }
+
+        return orderRepository.findAll(pageable).map(this::toOrderSummaryResponse);
+    }
+
     // =========================================================================
     // UPDATE STATUS
     // =========================================================================

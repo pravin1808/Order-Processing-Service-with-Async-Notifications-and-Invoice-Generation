@@ -67,7 +67,7 @@ public class SecurityConfig {
 
                     // Order management
                     .requestMatchers(HttpMethod.POST,  "/api/v1/orders").hasAnyRole("ADMIN", "CUSTOMER")
-                    .requestMatchers(HttpMethod.GET,   "/api/v1/orders").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.GET,   "/api/v1/orders").hasAnyRole("ADMIN", "CUSTOMER")
                     .requestMatchers(HttpMethod.GET,   "/api/v1/orders/**").hasAnyRole("ADMIN", "CUSTOMER")
                     .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/**").hasRole("ADMIN")
 

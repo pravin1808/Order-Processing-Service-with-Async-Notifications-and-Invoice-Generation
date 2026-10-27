@@ -23,12 +23,12 @@ export const CreateOrderDrawer = ({ isOpen, onClose, onOrderCreated }) => {
 
   useEffect(() => {
     if (user && isOpen) {
-      setCustomer({
+      setCustomer((prev) => ({
         customerName: user.name || '',
         customerEmail: user.email || '',
-        customerPhone: '',
-        deliveryAddress: '',
-      });
+        customerPhone: prev.customerPhone || user.phone || '',
+        deliveryAddress: prev.deliveryAddress || user.address || '',
+      }));
       setError('');
     }
   }, [user, isOpen]);
@@ -83,6 +83,10 @@ export const CreateOrderDrawer = ({ isOpen, onClose, onOrderCreated }) => {
       setError('Customer name and email are required.');
       return;
     }
+    if (!customer.deliveryAddress.trim()) {
+      setError('Delivery address is required.');
+      return;
+    }
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
@@ -110,7 +114,7 @@ export const CreateOrderDrawer = ({ isOpen, onClose, onOrderCreated }) => {
         customerName: customer.customerName.trim(),
         customerEmail: customer.customerEmail.trim(),
         customerPhone: customer.customerPhone.trim() || null,
-        deliveryAddress: customer.deliveryAddress.trim() || null,
+        customerAddress: customer.deliveryAddress.trim(),
         items: items.map((it) => ({
           productName: it.productName.trim(),
           quantity: parseInt(it.quantity, 10),
@@ -196,7 +200,7 @@ export const CreateOrderDrawer = ({ isOpen, onClose, onOrderCreated }) => {
             />
           </div>
           <div className="form-group">
-            <label className="form-label" htmlFor="deliveryAddress">Delivery Address</label>
+            <label className="form-label" htmlFor="deliveryAddress">Delivery Address *</label>
             <input
               id="deliveryAddress"
               name="deliveryAddress"
@@ -204,7 +208,8 @@ export const CreateOrderDrawer = ({ isOpen, onClose, onOrderCreated }) => {
               className="form-input"
               value={customer.deliveryAddress}
               onChange={handleCustomerChange}
-              placeholder="City, State, Pincode"
+              placeholder="e.g. 123 MG Road, Pune, Maharashtra"
+              required
             />
           </div>
         </div>

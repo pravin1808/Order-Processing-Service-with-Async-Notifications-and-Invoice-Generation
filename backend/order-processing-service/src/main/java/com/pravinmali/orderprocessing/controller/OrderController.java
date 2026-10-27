@@ -4,6 +4,7 @@ import com.pravinmali.orderprocessing.dto.request.CreateOrderRequest;
 import com.pravinmali.orderprocessing.dto.request.UpdateOrderStatusRequest;
 import com.pravinmali.orderprocessing.dto.response.OrderResponse;
 import com.pravinmali.orderprocessing.dto.response.OrderSummaryResponse;
+import com.pravinmali.orderprocessing.entity.OrderStatus;
 import com.pravinmali.orderprocessing.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -69,14 +70,17 @@ public class OrderController {
     }
 
     /**
-     * Paginated list of orders. ADMIN sees all; endpoint is ADMIN-only per SecurityConfig.
+     * Paginated list of orders. ADMIN sees all (with optional status filter);
+     * CUSTOMER sees personal orders only.
      */
     @GetMapping
-    @Operation(summary = "List all orders — ADMIN only")
+    @Operation(summary = "List orders — ADMIN sees all, CUSTOMER sees personal orders")
     public ResponseEntity<Page<OrderSummaryResponse>> listOrders(
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
-            Pageable pageable) {
-        return ResponseEntity.ok(orderService.listOrders(pageable));
+            Pageable pageable,
+            @RequestParam(required = false) OrderStatus status,
+            Authentication authentication) {
+        return ResponseEntity.ok(orderService.listOrders(pageable, status, authentication));
     }
 
     /**
