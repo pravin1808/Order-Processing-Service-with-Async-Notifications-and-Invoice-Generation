@@ -3,6 +3,7 @@ import Drawer from '../common/Drawer';
 import { useAuth } from '../../context/AuthContext';
 import { createOrder } from '../../api/orders';
 import { formatCurrency } from './OrderItemsTable';
+import { extractApiError } from '../../api/errorUtils';
 
 export const CreateOrderDrawer = ({ isOpen, onClose, onOrderCreated }) => {
   const { user } = useAuth();
@@ -19,6 +20,7 @@ export const CreateOrderDrawer = ({ isOpen, onClose, onOrderCreated }) => {
   ]);
 
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -30,6 +32,7 @@ export const CreateOrderDrawer = ({ isOpen, onClose, onOrderCreated }) => {
         deliveryAddress: prev.deliveryAddress || user.address || '',
       }));
       setError('');
+      setFieldErrors({});
     }
   }, [user, isOpen]);
 
@@ -51,6 +54,9 @@ export const CreateOrderDrawer = ({ isOpen, onClose, onOrderCreated }) => {
   const handleCustomerChange = (e) => {
     const { name, value } = e.target;
     setCustomer((prev) => ({ ...prev, [name]: value }));
+    if (fieldErrors[name] || fieldErrors.customerAddress) {
+      setFieldErrors((prev) => ({ ...prev, [name]: '', customerAddress: '' }));
+    }
   };
 
   const handleItemChange = (index, field, value) => {
@@ -59,6 +65,16 @@ export const CreateOrderDrawer = ({ isOpen, onClose, onOrderCreated }) => {
       updated[index] = { ...updated[index], [field]: value };
       return updated;
     });
+    const key1 = `items[${index}].${field}`;
+    const key2 = `items.${index}.${field}`;
+    if (fieldErrors[key1] || fieldErrors[key2]) {
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        delete next[key1];
+        delete next[key2];
+        return next;
+      });
+    }
   };
 
   const handleAddItem = () => {
@@ -109,6 +125,7 @@ export const CreateOrderDrawer = ({ isOpen, onClose, onOrderCreated }) => {
     try {
       setSubmitting(true);
       setError('');
+      setFieldErrors({});
 
       const orderPayload = {
         customerName: customer.customerName.trim(),
@@ -128,7 +145,9 @@ export const CreateOrderDrawer = ({ isOpen, onClose, onOrderCreated }) => {
         onOrderCreated(newOrder);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create order. Please verify all details.');
+      const parsed = await extractApiError(err, 'Failed to create order. Please verify all details.');
+      setError(parsed.message);
+      setFieldErrors(parsed.fieldErrors || {});
     } finally {
       setSubmitting(false);
     }
@@ -151,7 +170,7 @@ export const CreateOrderDrawer = ({ isOpen, onClose, onOrderCreated }) => {
       }
     >
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-        {error && <div className="alert alert-error">{error}</div>}
+        {error && <div className="alert alert-error" style={{ whiteSpace: 'pre-line' }}>{error}</div>}
 
         {/* Customer Information */}
         <h4 style={{ borderBottom: '1px solid var(--border)', paddingBottom: 'var(--space-1)' }}>
@@ -164,12 +183,13 @@ export const CreateOrderDrawer = ({ isOpen, onClose, onOrderCreated }) => {
             id="customerName"
             name="customerName"
             type="text"
-            className="form-input"
+            className={`form-input ${fieldErrors.customerName ? 'error' : ''}`}
             value={customer.customerName}
             onChange={handleCustomerChange}
             placeholder="Recipient's Name"
             required
           />
+          {fieldErrors.customerName && <span className="form-error">{fieldErrors.customerName}</span>}
         </div>
 
         <div className="form-group">
@@ -178,12 +198,13 @@ export const CreateOrderDrawer = ({ isOpen, onClose, onOrderCreated }) => {
             id="customerEmail"
             name="customerEmail"
             type="email"
-            className="form-input"
+            className={`form-input ${fieldErrors.customerEmail ? 'error' : ''}`}
             value={customer.customerEmail}
             onChange={handleCustomerChange}
             placeholder="name@example.com"
             required
           />
+          {fieldErrors.customerEmail && <span className="form-error">{fieldErrors.customerEmail}</span>}
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
@@ -193,11 +214,12 @@ export const CreateOrderDrawer = ({ isOpen, onClose, onOrderCreated }) => {
               id="customerPhone"
               name="customerPhone"
               type="tel"
-              className="form-input"
+              className={`form-input ${fieldErrors.customerPhone ? 'error' : ''}`}
               value={customer.customerPhone}
               onChange={handleCustomerChange}
               placeholder="+91 9876543210"
             />
+            {fieldErrors.customerPhone && <span className="form-error">{fieldErrors.customerPhone}</span>}
           </div>
           <div className="form-group">
             <label className="form-label" htmlFor="deliveryAddress">Delivery Address *</label>
@@ -205,12 +227,15 @@ export const CreateOrderDrawer = ({ isOpen, onClose, onOrderCreated }) => {
               id="deliveryAddress"
               name="deliveryAddress"
               type="text"
-              className="form-input"
+              className={`form-input ${fieldErrors.customerAddress || fieldErrors.deliveryAddress ? 'error' : ''}`}
               value={customer.deliveryAddress}
               onChange={handleCustomerChange}
               placeholder="e.g. 123 MG Road, Pune, Maharashtra"
               required
             />
+            {(fieldErrors.customerAddress || fieldErrors.deliveryAddress) && (
+              <span className="form-error">{fieldErrors.customerAddress || fieldErrors.deliveryAddress}</span>
+            )}
           </div>
         </div>
 
@@ -228,72 +253,84 @@ export const CreateOrderDrawer = ({ isOpen, onClose, onOrderCreated }) => {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-          {items.map((item, idx) => (
-            <div
-              key={idx}
-              style={{
-                background: 'var(--surface)',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius)',
-                padding: 'var(--space-3)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 'var(--space-2)',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>
-                  ITEM #{idx + 1}
-                </span>
-                {items.length > 1 && (
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-sm"
-                    onClick={() => handleRemoveItem(idx)}
-                    style={{ color: 'var(--danger)', padding: '2px 6px', fontSize: '11px' }}
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
+          {fieldErrors.items && <span className="form-error">{fieldErrors.items}</span>}
+          {items.map((item, idx) => {
+            const productError = fieldErrors[`items[${idx}].productName`] || fieldErrors[`items.${idx}.productName`];
+            const qtyError = fieldErrors[`items[${idx}].quantity`] || fieldErrors[`items.${idx}.quantity`];
+            const priceError = fieldErrors[`items[${idx}].unitPrice`] || fieldErrors[`items.${idx}.unitPrice`];
 
-              <input
-                type="text"
-                className="form-input"
-                placeholder="Product Name (e.g. Mechanical Keyboard)"
-                value={item.productName}
-                onChange={(e) => handleItemChange(idx, 'productName', e.target.value)}
-                required
-              />
+            return (
+              <div
+                key={idx}
+                style={{
+                  background: 'var(--surface)',
+                  border: productError || qtyError || priceError ? '1px solid var(--danger)' : '1px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  padding: 'var(--space-3)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 'var(--space-2)',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>
+                    ITEM #{idx + 1}
+                  </span>
+                  {items.length > 1 && (
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => handleRemoveItem(idx)}
+                      style={{ color: 'var(--danger)', padding: '2px 6px', fontSize: '11px' }}
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
-                <div className="form-group">
-                  <label className="form-label" style={{ fontSize: '11px' }}>Qty</label>
+                <div className="form-group" style={{ marginBottom: 0 }}>
                   <input
-                    type="number"
-                    min="1"
-                    className="form-input"
-                    value={item.quantity}
-                    onChange={(e) => handleItemChange(idx, 'quantity', e.target.value)}
+                    type="text"
+                    className={`form-input ${productError ? 'error' : ''}`}
+                    placeholder="Product Name (e.g. Mechanical Keyboard)"
+                    value={item.productName}
+                    onChange={(e) => handleItemChange(idx, 'productName', e.target.value)}
                     required
                   />
+                  {productError && <span className="form-error">{productError}</span>}
                 </div>
-                <div className="form-group">
-                  <label className="form-label" style={{ fontSize: '11px' }}>Unit Price (₹)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    className="form-input"
-                    placeholder="0.00"
-                    value={item.unitPrice}
-                    onChange={(e) => handleItemChange(idx, 'unitPrice', e.target.value)}
-                    required
-                  />
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label" style={{ fontSize: '11px' }}>Qty</label>
+                    <input
+                      type="number"
+                      min="1"
+                      className={`form-input ${qtyError ? 'error' : ''}`}
+                      value={item.quantity}
+                      onChange={(e) => handleItemChange(idx, 'quantity', e.target.value)}
+                      required
+                    />
+                    {qtyError && <span className="form-error">{qtyError}</span>}
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label" style={{ fontSize: '11px' }}>Unit Price (₹)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      className={`form-input ${priceError ? 'error' : ''}`}
+                      placeholder="0.00"
+                      value={item.unitPrice}
+                      onChange={(e) => handleItemChange(idx, 'unitPrice', e.target.value)}
+                      required
+                    />
+                    {priceError && <span className="form-error">{priceError}</span>}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           <button
             type="button"

@@ -6,6 +6,7 @@ import OrderDetailPanel from '../components/orders/OrderDetailPanel';
 import BatchOrderDrawer from '../components/orders/BatchOrderDrawer';
 import { getOrders, getOrderById, exportOrdersCsv } from '../api/orders';
 import { formatCurrency } from '../components/orders/OrderItemsTable';
+import { extractApiError } from '../api/errorUtils';
 
 export const DashboardPage = () => {
   const [orders, setOrders] = useState([]);
@@ -15,6 +16,7 @@ export const DashboardPage = () => {
   const [totalElements, setTotalElements] = useState(0);
   const [statusFilter, setStatusFilter] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [dashboardError, setDashboardError] = useState('');
   const [exporting, setExporting] = useState(false);
   const [isBatchOpen, setIsBatchOpen] = useState(false);
 
@@ -27,6 +29,7 @@ export const DashboardPage = () => {
   const fetchOrders = async (targetPage = page, targetSize = size, targetStatus = statusFilter) => {
     try {
       setLoading(true);
+      setDashboardError('');
       const params = {
         page: targetPage,
         size: targetSize,
@@ -47,7 +50,8 @@ export const DashboardPage = () => {
         handleSelectOrder(list[0].id);
       }
     } catch (err) {
-      console.error('Failed to load admin orders', err);
+      const parsed = await extractApiError(err, 'Failed to load admin orders.');
+      setDashboardError(parsed.message);
     } finally {
       setLoading(false);
     }
@@ -65,7 +69,8 @@ export const DashboardPage = () => {
       const full = await getOrderById(orderId);
       setSelectedOrder(full);
     } catch (err) {
-      setDetailError('Failed to load order details');
+      const parsed = await extractApiError(err, 'Failed to load order details');
+      setDetailError(parsed.message);
       setSelectedOrder(null);
     } finally {
       setDetailLoading(false);
@@ -87,7 +92,8 @@ export const DashboardPage = () => {
       setExporting(true);
       await exportOrdersCsv();
     } catch (err) {
-      alert('Failed to export CSV. Please try again.');
+      const parsed = await extractApiError(err, 'Failed to export CSV. Please try again.');
+      alert(parsed.message);
     } finally {
       setExporting(false);
     }
@@ -101,6 +107,12 @@ export const DashboardPage = () => {
   return (
     <AppLayout onOpenBatchDrawer={() => setIsBatchOpen(true)}>
       <div className="page" style={{ maxWidth: '1600px' }}>
+        {dashboardError && (
+          <div className="alert alert-error" style={{ marginBottom: 'var(--space-4)', whiteSpace: 'pre-line' }}>
+            {dashboardError}
+          </div>
+        )}
+
         {/* Page Header */}
         <div className="page-header" style={{ flexWrap: 'wrap', gap: 'var(--space-3)' }}>
           <div>

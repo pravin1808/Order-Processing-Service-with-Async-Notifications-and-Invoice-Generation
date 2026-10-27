@@ -3,6 +3,7 @@ import Drawer from '../common/Drawer';
 import { useAuth } from '../../context/AuthContext';
 import { createOrder } from '../../api/orders';
 import { formatCurrency } from './OrderItemsTable';
+import { extractApiError } from '../../api/errorUtils';
 
 export const BatchOrderDrawer = ({ isOpen, onClose, onBatchCreated }) => {
   const { user } = useAuth();
@@ -196,7 +197,8 @@ export const BatchOrderDrawer = ({ isOpen, onClose, onBatchCreated }) => {
         }
       }, 500);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed during batch order creation.');
+      const parsed = await extractApiError(err, 'Failed during batch order creation.');
+      setError(parsed.message);
     } finally {
       setSubmitting(false);
     }
@@ -251,7 +253,7 @@ export const BatchOrderDrawer = ({ isOpen, onClose, onBatchCreated }) => {
           💡 <strong>Review & Edit Presets:</strong> Inspect or modify any recipient, address, and product details below. Check the boxes of the orders you want to generate.
         </div>
 
-        {error && <div className="alert alert-error">{error}</div>}
+        {error && <div className="alert alert-error" style={{ whiteSpace: 'pre-line' }}>{error}</div>}
         {progressMsg && <div className="alert alert-success">{progressMsg}</div>}
 
         {presets.map((pkg, pkgIdx) => {

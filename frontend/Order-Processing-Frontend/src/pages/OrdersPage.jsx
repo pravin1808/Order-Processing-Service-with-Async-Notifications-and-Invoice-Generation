@@ -6,6 +6,7 @@ import OrderDetailPanel from '../components/orders/OrderDetailPanel';
 import CreateOrderDrawer from '../components/orders/CreateOrderDrawer';
 import BatchOrderDrawer from '../components/orders/BatchOrderDrawer';
 import { getOrders, getOrderById } from '../api/orders';
+import { extractApiError } from '../api/errorUtils';
 
 export const OrdersPage = () => {
   const { id: urlOrderId } = useParams();
@@ -43,7 +44,8 @@ export const OrdersPage = () => {
         setSelectedOrderId(null);
       }
     } catch (err) {
-      setListError(err.response?.data?.message || 'Failed to load orders.');
+      const parsed = await extractApiError(err, 'Failed to load orders.');
+      setListError(parsed.message);
     } finally {
       setListLoading(false);
     }
@@ -64,7 +66,8 @@ export const OrdersPage = () => {
       const fullOrder = await getOrderById(orderId);
       setSelectedOrder(fullOrder);
     } catch (err) {
-      setDetailError(err.response?.data?.message || 'Could not load order details');
+      const parsed = await extractApiError(err, 'Could not load order details');
+      setDetailError(parsed.message);
       setSelectedOrder(null);
     } finally {
       setDetailLoading(false);

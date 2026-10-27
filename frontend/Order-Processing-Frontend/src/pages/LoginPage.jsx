@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { extractApiError } from '../api/errorUtils';
 import '../styles/auth.css';
 
 export const LoginPage = () => {
@@ -38,8 +39,8 @@ export const LoginPage = () => {
         navigate('/orders', { replace: true });
       }
     } catch (err) {
-      const serverMessage = err.response?.data?.message || err.response?.data?.error;
-      setError(serverMessage || 'Invalid email or password. Please try again.');
+      const parsed = await extractApiError(err, 'Invalid email or password. Please try again.');
+      setError(parsed.message);
     } finally {
       setLoading(false);
     }

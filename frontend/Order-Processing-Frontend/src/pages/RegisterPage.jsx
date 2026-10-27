@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { extractApiError } from '../api/errorUtils';
 import '../styles/auth.css';
 
 export const RegisterPage = () => {
@@ -63,16 +64,9 @@ export const RegisterPage = () => {
       // Customer account created & logged in -> navigate to customer orders
       navigate('/orders', { replace: true });
     } catch (err) {
-      const resp = err.response?.data;
-      if (resp?.fieldErrors && Array.isArray(resp.fieldErrors)) {
-        const errors = {};
-        resp.fieldErrors.forEach((fe) => {
-          errors[fe.field] = fe.message;
-        });
-        setFieldErrors(errors);
-      } else {
-        setError(resp?.message || resp?.error || 'Registration failed. The email may already be in use.');
-      }
+      const parsed = await extractApiError(err, 'Registration failed. The email may already be in use.');
+      setError(parsed.message);
+      setFieldErrors(parsed.fieldErrors || {});
     } finally {
       setLoading(false);
     }

@@ -5,6 +5,7 @@ import OrderTimeline from './OrderTimeline';
 import OrderItemsTable, { formatCurrency } from './OrderItemsTable';
 import { downloadInvoice, updateOrderStatus } from '../../api/orders';
 import { useAuth } from '../../context/AuthContext';
+import { extractApiError } from '../../api/errorUtils';
 
 /**
  * Right-pane Order Detail View.
@@ -57,7 +58,8 @@ export const OrderDetailPanel = ({ order, loading, error, onStatusUpdated }) => 
       setDownloading(true);
       await downloadInvoice(order.id);
     } catch (err) {
-      alert(err.response?.data?.message || 'Invoice download failed.');
+      const parsed = await extractApiError(err, 'Invoice download failed.');
+      alert(parsed.message);
     } finally {
       setDownloading(false);
     }
@@ -75,7 +77,8 @@ export const OrderDetailPanel = ({ order, loading, error, onStatusUpdated }) => 
         onStatusUpdated(updated);
       }
     } catch (err) {
-      setStatusError(err.response?.data?.message || 'Failed to update order status');
+      const parsed = await extractApiError(err, 'Failed to update order status');
+      setStatusError(parsed.message);
     } finally {
       setUpdatingStatus(false);
     }
