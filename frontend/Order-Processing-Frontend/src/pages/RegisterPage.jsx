@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { extractApiError } from '../api/errorUtils';
+import { PasswordInput } from '../components/common/PasswordInput';
 import '../styles/auth.css';
 
 export const RegisterPage = () => {
@@ -12,6 +13,7 @@ export const RegisterPage = () => {
     name: '',
     email: '',
     password: '',
+    confirmPassword: '',
     phone: '',
     address: '',
   });
@@ -25,6 +27,9 @@ export const RegisterPage = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (fieldErrors[name]) {
       setFieldErrors((prev) => ({ ...prev, [name]: '' }));
+    }
+    if (name === 'password' && fieldErrors.confirmPassword) {
+      setFieldErrors((prev) => ({ ...prev, confirmPassword: '' }));
     }
   };
 
@@ -40,6 +45,11 @@ export const RegisterPage = () => {
       errors.password = 'Password is required';
     } else if (formData.password.length < 6) {
       errors.password = 'Password must be at least 6 characters';
+    }
+    if (!formData.confirmPassword) {
+      errors.confirmPassword = 'Please re-enter your password';
+    } else if (formData.password && formData.confirmPassword !== formData.password) {
+      errors.confirmPassword = 'Passwords do not match';
     }
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
@@ -128,17 +138,32 @@ export const RegisterPage = () => {
 
           <div className="form-group">
             <label className="form-label" htmlFor="password">Password * (min 6 characters)</label>
-            <input
+            <PasswordInput
               id="password"
               name="password"
-              type="password"
               className={`form-input ${fieldErrors.password ? 'error' : ''}`}
               placeholder="••••••••"
               value={formData.password}
               onChange={handleChange}
               required
+              autoComplete="new-password"
             />
             {fieldErrors.password && <span className="form-error">{fieldErrors.password}</span>}
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="confirmPassword">Re-enter Password *</label>
+            <PasswordInput
+              id="confirmPassword"
+              name="confirmPassword"
+              className={`form-input ${fieldErrors.confirmPassword ? 'error' : ''}`}
+              placeholder="••••••••"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+              autoComplete="new-password"
+            />
+            {fieldErrors.confirmPassword && <span className="form-error">{fieldErrors.confirmPassword}</span>}
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>

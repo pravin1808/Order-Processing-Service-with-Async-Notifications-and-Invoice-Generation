@@ -178,6 +178,63 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
+.auth-form .form-input.error {
+  border-color: #EF4444;
+  background-color: #FEF2F2;
+}
+
+.auth-form .form-input.error:focus {
+  border-color: #DC2626;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+/* Password input wrapper with show/hide toggle */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-input-wrapper .form-input {
+  width: 100%;
+  padding-right: 42px !important;
+}
+
+.btn-password-toggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.btn-password-toggle:hover {
+  color: #0F172A;
+  background-color: #F1F5F9;
+}
+
+.btn-password-toggle:focus-visible {
+  outline: 2px solid #2563EB;
+  outline-offset: 1px;
+}
+
+.btn-password-toggle svg {
+  display: block;
+}
+
 .auth-form .btn-primary {
   height: 44px;
   background: linear-gradient(180deg, #2563EB 0%, #1D4ED8 100%);

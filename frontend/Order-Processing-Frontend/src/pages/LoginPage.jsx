@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { extractApiError } from '../api/errorUtils';
+import { PasswordInput } from '../components/common/PasswordInput';
 import '../styles/auth.css';
 
 export const LoginPage = () => {
@@ -92,14 +93,15 @@ export const LoginPage = () => {
 
           <div className="form-group">
             <label className="form-label" htmlFor="password">Password</label>
-            <input
+            <PasswordInput
               id="password"
-              type="password"
+              name="password"
               className="form-input"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              autoComplete="current-password"
             />
           </div>
 
