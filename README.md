@@ -112,6 +112,14 @@ Base URL: `http://localhost:8080/api/v1`
 | `GET` | `/export/revenue/summary?date=YYYY-MM-DD` | Get daily revenue JSON summary grouped by status | ADMIN |
 | `POST` | `/export/revenue/trigger?date=YYYY-MM-DD` | Manually trigger nightly revenue CSV export job | ADMIN |
 
+### Notifications (Async Domain Events)
+
+| Method | Endpoint | Description | Role |
+|---|---|---|---|
+| `GET` | `/notifications` | Get user notifications & unread badge count | All Authenticated |
+| `PATCH` | `/notifications/{id}/read` | Mark a specific notification as read | All Authenticated |
+| `PATCH` | `/notifications/read-all` | Mark all notifications as read | All Authenticated |
+
 ### Nightly Scheduled Job
 
 - **Schedule:** Runs every night at midnight (`00:00:00`), configurable via `app.scheduling.nightly-cron` in `application.properties`.
@@ -176,7 +184,7 @@ cd backend/order-processing-service
 ./mvnw test
 ```
 
-Tests: **22 tests — 6 unit, 16 integration** — all pass with H2.
+Tests: **25 tests — 6 unit, 19 integration** — all pass with H2.
 
 ---
 

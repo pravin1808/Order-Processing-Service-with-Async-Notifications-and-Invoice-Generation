@@ -63,3 +63,21 @@ CREATE TABLE IF NOT EXISTS order_items (
 );
 
 CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items (order_id);
+
+-- =============================================================================
+-- notifications
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS notifications (
+    id              UUID          NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    recipient_email VARCHAR(255)  NOT NULL,
+    title           VARCHAR(255)  NOT NULL,
+    message         VARCHAR(1000) NOT NULL,
+    order_id        UUID,
+    event_type      VARCHAR(50)   NOT NULL,
+    is_read         BOOLEAN       NOT NULL DEFAULT FALSE,
+    created_at      TIMESTAMP     NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_recipient  ON notifications (recipient_email);
+CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON notifications (created_at DESC);
+

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { exportOrdersCsv } from '../../api/orders';
+import { NotificationBell } from './NotificationBell';
 import '../../styles/navbar.css';
 
 export const Navbar = ({ onCreateOrderClick, onOpenBatchDrawer }) => {
@@ -100,6 +101,9 @@ export const Navbar = ({ onCreateOrderClick, onOpenBatchDrawer }) => {
             {exporting ? 'Exporting...' : '📥 Export CSV'}
           </button>
         )}
+
+        {/* Async Notifications Bell */}
+        <NotificationBell />
 
         {/* User Info Pill */}
         <div className="navbar-user">
