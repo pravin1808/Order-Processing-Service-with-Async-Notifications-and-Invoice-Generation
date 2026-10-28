@@ -65,27 +65,72 @@ PostgreSQL (orders, order_items, customers)
 
 ### Run with Docker Compose
 
+Starts the **Spring Boot application**, **PostgreSQL database**, and **NATS message broker**:
+
 ```bash
 # Set DB password (required)
 export DB_PASSWORD=yourpassword
 
-# Build and start both PostgreSQL and the app
+# Build and start app, postgres, and message broker
 docker-compose up --build
 ```
 
-App will be available at `http://localhost:8080`.
+- Backend API: `http://localhost:8080`
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- NATS Dashboard: `http://localhost:8222`
 
-### Run Locally (without Docker)
+---
 
+### Run Locally (Without Docker)
+
+#### 1. Database Configuration
+Ensure PostgreSQL is running on port 5432 and database `orderdb` exists. A complete schema file is provided in [`schema.sql`](schema.sql):
+```bash
+psql -U postgres -d orderdb -f schema.sql
+```
+
+#### 2. Start Backend Service
 ```bash
 cd backend/order-processing-service
 
-# Set required env var
+# Set required environment variables
 export DB_PASSWORD=yourpassword
 
-# Run
+# Run Spring Boot service
 ./mvnw spring-boot:run
 ```
+Backend will be available at `http://localhost:8080`.
+
+#### 3. Start React Frontend
+```bash
+cd frontend/Order-Processing-Frontend
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+Frontend will be available at `http://localhost:5173`.
+
+---
+
+### Demo Accounts & Roles
+
+The system automatically initializes and synchronizes the following demo accounts upon startup:
+
+| Role | Email | Password | Permissions |
+|---|---|---|---|
+| **ADMIN** | `admin@orderflow.com` | `Admin@1234` | Full access: all orders, status updates, invoice generation, revenue reports, scheduled job triggers |
+| **CUSTOMER** | `pravin@example.com` | `Pass@1234` | Scoped access: create orders, view personal orders, download invoices, real-time async notification bell |
+
+---
+
+### Submission & Interview Note
+
+- **GitHub Submission:** Invite **`iks-hiring`** to the repository with read/collaborator access.
+- **Deadline:** 29 Oct 2026.
+
 
 ---
 

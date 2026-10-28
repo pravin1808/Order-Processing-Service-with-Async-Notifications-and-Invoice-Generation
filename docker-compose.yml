@@ -19,6 +19,13 @@ services:
       timeout: 5s
       retries: 5
 
+  message-broker:
+    image: nats:2.10-alpine
+    container_name: order-message-broker
+    ports:
+      - "4222:4222"
+      - "8222:8222" # NATS monitoring dashboard
+
   app:
     build:
       context: ./backend/order-processing-service
