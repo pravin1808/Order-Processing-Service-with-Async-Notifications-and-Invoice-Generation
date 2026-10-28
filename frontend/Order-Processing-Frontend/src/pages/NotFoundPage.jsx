@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export const NotFoundPage = () => {
-  const { isAuthenticated, isAdmin } = useAuth();
-  const homePath = isAuthenticated ? (isAdmin ? '/dashboard' : '/orders') : '/login';
+  const { isAuthenticated } = useAuth();
+  const homePath = isAuthenticated ? '/dashboard' : '/login';
 
   return (
     <div style={{

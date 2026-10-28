@@ -30,21 +30,19 @@ export const Navbar = ({ onCreateOrderClick, onOpenBatchDrawer }) => {
   return (
     <header className="navbar">
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-6)' }}>
-        <Link to={isAdmin ? '/dashboard' : '/orders'} className="navbar-brand">
+        <Link to="/dashboard" className="navbar-brand">
           <div className="navbar-brand-icon">⚡</div>
           <span>OrderFlow</span>
           <span className="navbar-badge">PRO</span>
         </Link>
 
         <nav className="navbar-nav">
-          {isAdmin && (
-            <NavLink
-              to="/dashboard"
-              className={({ isActive }) => `navbar-link ${isActive ? 'active' : ''}`}
-            >
-              Dashboard
-            </NavLink>
-          )}
+          <NavLink
+            to="/dashboard"
+            className={({ isActive }) => `navbar-link ${isActive ? 'active' : ''}`}
+          >
+            Dashboard
+          </NavLink>
 
           <NavLink
             to="/orders"

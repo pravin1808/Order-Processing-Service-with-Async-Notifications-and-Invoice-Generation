@@ -61,8 +61,8 @@ export const RegisterPage = () => {
         address: formData.address.trim() || null,
       });
 
-      // Customer account created & logged in -> navigate to customer orders
-      navigate('/orders', { replace: true });
+      // Customer account created & logged in -> navigate to dashboard
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       const parsed = await extractApiError(err, 'Registration failed. The email may already be in use.');
       setError(parsed.message);

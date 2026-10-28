@@ -4,11 +4,14 @@ import StatCard from '../components/dashboard/StatCard';
 import AdminOrderTable from '../components/dashboard/AdminOrderTable';
 import OrderDetailPanel from '../components/orders/OrderDetailPanel';
 import BatchOrderDrawer from '../components/orders/BatchOrderDrawer';
+import CreateOrderDrawer from '../components/orders/CreateOrderDrawer';
 import { getOrders, getOrderById, exportOrdersCsv } from '../api/orders';
 import { formatCurrency } from '../components/orders/OrderItemsTable';
 import { extractApiError } from '../api/errorUtils';
+import { useAuth } from '../context/AuthContext';
 
 export const DashboardPage = () => {
+  const { user, isAdmin, isCustomer } = useAuth();
   const [orders, setOrders] = useState([]);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
@@ -19,6 +22,7 @@ export const DashboardPage = () => {
   const [dashboardError, setDashboardError] = useState('');
   const [exporting, setExporting] = useState(false);
   const [isBatchOpen, setIsBatchOpen] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   // Selected Order for side inspection panel
   const [selectedOrderId, setSelectedOrderId] = useState(null);
@@ -105,7 +109,10 @@ export const DashboardPage = () => {
   const totalRevenue = orders.reduce((acc, curr) => acc + (parseFloat(curr.total) || 0), 0);
 
   return (
-    <AppLayout onOpenBatchDrawer={() => setIsBatchOpen(true)}>
+    <AppLayout
+      onCreateOrderClick={() => setIsCreateOpen(true)}
+      onOpenBatchDrawer={() => setIsBatchOpen(true)}
+    >
       <div className="page" style={{ maxWidth: '1600px' }}>
         {dashboardError && (
           <div className="alert alert-error" style={{ marginBottom: 'var(--space-4)', whiteSpace: 'pre-line' }}>
@@ -116,13 +123,25 @@ export const DashboardPage = () => {
         {/* Page Header */}
         <div className="page-header" style={{ flexWrap: 'wrap', gap: 'var(--space-3)' }}>
           <div>
-            <h1>Admin Operations Dashboard</h1>
+            <h1>{isAdmin ? 'Admin Operations Dashboard' : `Customer Dashboard — Welcome, ${user?.name || 'Customer'}`}</h1>
             <p className="text-secondary text-sm">
-              Real-time order fulfillment, customer status transitions, and accounting
+              {isAdmin
+                ? 'Real-time order fulfillment, customer status transitions, and accounting'
+                : 'Overview of your personal orders, delivery tracking, and spending summary'}
             </p>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+            {isCustomer && (
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => setIsCreateOpen(true)}
+              >
+                + Create Order
+              </button>
+            )}
+
             <button
               type="button"
               className="btn btn-outline btn-sm"
@@ -130,14 +149,17 @@ export const DashboardPage = () => {
             >
               ⚡ Batch Order Presets
             </button>
-            <button
-              type="button"
-              className="btn btn-primary btn-sm"
-              onClick={handleExportCsv}
-              disabled={exporting}
-            >
-              {exporting ? 'Generating CSV...' : '📥 Export All Orders (CSV)'}
-            </button>
+
+            {isAdmin && (
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={handleExportCsv}
+                disabled={exporting}
+              >
+                {exporting ? 'Generating CSV...' : '📥 Export All Orders (CSV)'}
+              </button>
+            )}
           </div>
         </div>
 
@@ -146,27 +168,27 @@ export const DashboardPage = () => {
           <StatCard
             label="Total Orders"
             value={totalElements}
-            sub="Across all channels"
+            sub={isAdmin ? 'Across all customer accounts' : 'Your total order history'}
             icon="📊"
           />
           <StatCard
             label="Pending Action"
             value={pendingCount}
-            sub="Needs fulfillment confirmation"
+            sub={isAdmin ? 'Needs fulfillment confirmation' : 'Awaiting confirmation'}
             icon="⏳"
             highlightColor="var(--status-pending-dot)"
           />
           <StatCard
             label="In Transit"
             value={inTransitCount}
-            sub="Confirmed & Out for delivery"
+            sub={isAdmin ? 'Confirmed & Out for delivery' : 'Confirmed & Shipped'}
             icon="🚚"
             highlightColor="var(--status-confirmed-dot)"
           />
           <StatCard
-            label="Batch Revenue"
+            label={isAdmin ? 'Batch Revenue' : 'Total Spending'}
             value={formatCurrency(totalRevenue)}
-            sub="Active view gross total"
+            sub={isAdmin ? 'Active view gross total' : 'Total value of listed orders'}
             icon="💳"
             highlightColor="var(--status-delivered-dot)"
           />
@@ -226,6 +248,12 @@ export const DashboardPage = () => {
         isOpen={isBatchOpen}
         onClose={() => setIsBatchOpen(false)}
         onBatchCreated={() => fetchOrders(page, size, statusFilter)}
+      />
+
+      <CreateOrderDrawer
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        onOrderCreated={() => fetchOrders(0, size, statusFilter)}
       />
     </AppLayout>
   );

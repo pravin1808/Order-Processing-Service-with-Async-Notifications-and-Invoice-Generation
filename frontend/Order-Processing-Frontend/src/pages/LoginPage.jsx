@@ -29,15 +29,9 @@ export const LoginPage = () => {
     setLoading(true);
 
     try {
-      const user = await login(email, password);
-      // Navigate to intended destination or role-based home
-      if (from) {
-        navigate(from, { replace: true });
-      } else if (user.role === 'ADMIN') {
-        navigate('/dashboard', { replace: true });
-      } else {
-        navigate('/orders', { replace: true });
-      }
+      await login(email, password);
+      // Unconditionally navigate directly to dashboard for both customer and admin
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       const parsed = await extractApiError(err, 'Invalid email or password. Please try again.');
       setError(parsed.message);

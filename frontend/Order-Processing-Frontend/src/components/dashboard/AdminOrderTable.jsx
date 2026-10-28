@@ -4,6 +4,7 @@ import Spinner from '../common/Spinner';
 import EmptyState from '../common/EmptyState';
 import { formatCurrency } from '../orders/OrderItemsTable';
 import { updateOrderStatus, downloadInvoice } from '../../api/orders';
+import { useAuth } from '../../context/AuthContext';
 
 export const AdminOrderTable = ({
   orders = [],
@@ -21,6 +22,7 @@ export const AdminOrderTable = ({
   onOrderUpdated,
   onRefresh,
 }) => {
+  const { isAdmin } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [actionLoadingId, setActionLoadingId] = useState(null);
 
@@ -180,7 +182,7 @@ export const AdminOrderTable = ({
                     </td>
                     <td className="text-right">
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }} onClick={(e) => e.stopPropagation()}>
-                        {quickAction && (
+                        {isAdmin && quickAction && (
                           <button
                             type="button"
                             className={`btn btn-sm ${quickAction.style}`}

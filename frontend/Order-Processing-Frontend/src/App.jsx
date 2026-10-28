@@ -9,13 +9,13 @@ import DashboardPage from './pages/DashboardPage';
 import OrdersPage from './pages/OrdersPage';
 import NotFoundPage from './pages/NotFoundPage';
 
-// Component to handle root path redirect based on auth status and role
+// Component to handle root path redirect based on auth status
 const RootRedirect = () => {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated } = useAuth();
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-  return isAdmin ? <Navigate to="/dashboard" replace /> : <Navigate to="/orders" replace />;
+  return <Navigate to="/dashboard" replace />;
 };
 
 function App() {
@@ -34,7 +34,7 @@ function App() {
           <Route
             path="/dashboard"
             element={
-              <PrivateRoute allowedRoles={['ADMIN']}>
+              <PrivateRoute allowedRoles={['ADMIN', 'CUSTOMER']}>
                 <DashboardPage />
               </PrivateRoute>
             }

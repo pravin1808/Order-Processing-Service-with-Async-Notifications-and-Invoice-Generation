@@ -13,15 +13,14 @@ export const PrivateRoute = ({ allowedRoles, children }) => {
   const location = useLocation();
 
   if (!isAuthenticated) {
-    // Redirect to login page and preserve requested path for post-login redirect
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    // Redirect to login page
+    return <Navigate to="/login" replace />;
   }
 
   // If specific roles are required, check role membership
   if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(role)) {
-    // Role mismatch: redirect to appropriate home
-    const fallbackPath = role === 'ADMIN' ? '/dashboard' : '/orders';
-    return <Navigate to={fallbackPath} replace />;
+    // Role mismatch: redirect to dashboard
+    return <Navigate to="/dashboard" replace />;
   }
 
   return children;
