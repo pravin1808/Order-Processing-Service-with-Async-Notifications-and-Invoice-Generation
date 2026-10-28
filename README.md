@@ -103,11 +103,20 @@ Base URL: `http://localhost:8080/api/v1`
 | `PATCH` | `/orders/{id}/status` | Update order status |
 | `GET` | `/orders/{id}/invoice` | Download PDF invoice |
 
-### Export
+### Export & Reporting
 
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/export/orders/csv` | Download all orders as CSV |
+| Method | Endpoint | Description | Role |
+|---|---|---|---|
+| `GET` | `/export/orders/csv` | Download all orders as CSV | ADMIN |
+| `GET` | `/export/revenue/csv?date=YYYY-MM-DD` | Download daily revenue CSV grouped by order status | ADMIN |
+| `GET` | `/export/revenue/summary?date=YYYY-MM-DD` | Get daily revenue JSON summary grouped by status | ADMIN |
+| `POST` | `/export/revenue/trigger?date=YYYY-MM-DD` | Manually trigger nightly revenue CSV export job | ADMIN |
+
+### Nightly Scheduled Job
+
+- **Schedule:** Runs every night at midnight (`00:00:00`), configurable via `app.scheduling.nightly-cron` in `application.properties`.
+- **Action:** Groups the preceding day's orders by `OrderStatus` (`PENDING`, `CONFIRMED`, `SHIPPED`, `DELIVERED`, `CANCELLED`), aggregates subtotal, 18% GST tax, and total revenue, and writes the CSV to `exports/revenue-reports/daily-revenue-YYYY-MM-DD.csv`.
+- **Manual Trigger:** Admins can trigger the job on demand via `POST /api/v1/export/revenue/trigger` or via the interactive Dashboard UI.
 
 ### Swagger UI
 
@@ -167,7 +176,7 @@ cd backend/order-processing-service
 ./mvnw test
 ```
 
-Tests: **17 tests — 5 unit, 12 integration** — all pass with H2.
+Tests: **22 tests — 6 unit, 16 integration** — all pass with H2.
 
 ---
 

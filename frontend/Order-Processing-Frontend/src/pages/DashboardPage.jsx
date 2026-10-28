@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AppLayout from '../components/layout/AppLayout';
 import StatCard from '../components/dashboard/StatCard';
 import AdminOrderTable from '../components/dashboard/AdminOrderTable';
+import RevenueReportWidget from '../components/dashboard/RevenueReportWidget';
 import OrderDetailPanel from '../components/orders/OrderDetailPanel';
 import BatchOrderDrawer from '../components/orders/BatchOrderDrawer';
 import CreateOrderDrawer from '../components/orders/CreateOrderDrawer';
@@ -242,6 +243,9 @@ export const DashboardPage = () => {
             </div>
           )}
         </div>
+
+        {/* Daily Revenue Summary & Scheduled Nightly Job (Admin only) */}
+        {isAdmin && <RevenueReportWidget />}
       </div>
 
       <BatchOrderDrawer

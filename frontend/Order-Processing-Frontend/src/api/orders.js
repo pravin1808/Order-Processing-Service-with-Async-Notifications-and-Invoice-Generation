@@ -89,3 +89,49 @@ export const exportOrdersCsv = async () => {
   link.remove();
   window.URL.revokeObjectURL(url);
 };
+
+/**
+ * Fetch daily revenue summary grouped by order status (ADMIN only).
+ *
+ * @param {string} [date] - Optional date in YYYY-MM-DD format
+ */
+export const getDailyRevenueSummary = async (date) => {
+  const params = date ? { date } : {};
+  const response = await api.get('/export/revenue/summary', { params });
+  return response.data; // DailyRevenueReportResponse
+};
+
+/**
+ * Download daily revenue CSV summary grouped by order status (ADMIN only).
+ *
+ * @param {string} [date] - Optional date in YYYY-MM-DD format
+ */
+export const downloadDailyRevenueCsv = async (date) => {
+  const params = date ? { date } : {};
+  const response = await api.get('/export/revenue/csv', {
+    params,
+    responseType: 'blob',
+  });
+
+  const targetDate = date || new Date().toISOString().slice(0, 10);
+  const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8;' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `daily-revenue-${targetDate}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
+
+/**
+ * Manually trigger the nightly revenue CSV export job (ADMIN only).
+ *
+ * @param {string} [date] - Optional date in YYYY-MM-DD format
+ */
+export const triggerNightlyRevenueJob = async (date) => {
+  const params = date ? { date } : {};
+  const response = await api.post('/export/revenue/trigger', null, { params });
+  return response.data;
+};
