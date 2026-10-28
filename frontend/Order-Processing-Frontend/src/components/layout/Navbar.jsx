@@ -31,6 +31,7 @@ export const Navbar = ({ onCreateOrderClick, onOpenBatchDrawer }) => {
     <header className="navbar">
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-6)' }}>
         <Link to={isAdmin ? '/dashboard' : '/orders'} className="navbar-brand">
+          <div className="navbar-brand-icon">⚡</div>
           <span>OrderFlow</span>
           <span className="navbar-badge">PRO</span>
         </Link>
@@ -55,16 +56,17 @@ export const Navbar = ({ onCreateOrderClick, onOpenBatchDrawer }) => {
       </div>
 
       <div className="navbar-actions">
+        {/* Live system status indicator */}
+        <div className="navbar-system-status" title="Spring Boot backend is active and healthy">
+          <span className="navbar-status-dot"></span>
+          <span>Online</span>
+        </div>
+
         {/* Batch Generator Shortcut */}
         {onOpenBatchDrawer && (
           <button
             type="button"
-            className="btn btn-sm"
-            style={{
-              background: 'rgba(255, 255, 255, 0.08)',
-              color: '#F3F4F6',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-            }}
+            className="btn-navbar-batch"
             onClick={onOpenBatchDrawer}
             title="Preview and place multiple pre-configured orders at once"
           >
@@ -76,7 +78,7 @@ export const Navbar = ({ onCreateOrderClick, onOpenBatchDrawer }) => {
         {isCustomer && onCreateOrderClick && (
           <button
             type="button"
-            className="btn btn-primary btn-sm"
+            className="btn-navbar-create"
             onClick={onCreateOrderClick}
           >
             + Create Order
@@ -87,11 +89,11 @@ export const Navbar = ({ onCreateOrderClick, onOpenBatchDrawer }) => {
         {isAdmin && (
           <button
             type="button"
-            className="btn btn-sm"
+            className="btn btn-sm btn-ghost"
             style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              color: '#FFFFFF',
-              borderColor: 'rgba(255, 255, 255, 0.2)',
+              color: '#F8FAFC',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              background: 'rgba(255, 255, 255, 0.05)',
             }}
             onClick={handleExportCsv}
             disabled={exporting}

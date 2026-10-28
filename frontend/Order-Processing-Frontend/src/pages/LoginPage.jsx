@@ -56,25 +56,28 @@ export const LoginPage = () => {
     <div className="auth-container">
       <div className="auth-header">
         <div className="auth-logo">
+          <div className="auth-logo-icon">⚡</div>
           <span>OrderFlow</span>
           <span className="auth-logo-badge">PRO</span>
         </div>
-        <p className="text-secondary text-sm">Enterprise Order Processing & Fulfillment</p>
+        <p>Enterprise Order Processing & Fulfillment Service</p>
       </div>
 
       <div className="auth-card">
-        <h1 className="auth-title">Sign In</h1>
-        <p className="auth-subtitle">Enter your account credentials to access your dashboard</p>
+        <h1 className="auth-title">Welcome Back</h1>
+        <p className="auth-subtitle">Sign in to manage orders, tracking events, and PDF invoices</p>
 
         {sessionExpired && (
           <div className="auth-alert auth-alert-info">
-            Your session has expired. Please sign in again.
+            <span>ℹ️</span>
+            <span>Your session has expired. Please sign in again.</span>
           </div>
         )}
 
         {error && (
-          <div className="auth-alert auth-alert-error" role="alert">
-            {error}
+          <div className="auth-alert auth-alert-error" role="alert" style={{ whiteSpace: 'pre-line' }}>
+            <span>⚠️</span>
+            <span>{error}</span>
           </div>
         )}
 
@@ -117,9 +120,9 @@ export const LoginPage = () => {
         </form>
 
         <div className="auth-demo-box">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <strong>Demo Accounts</strong>
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Click to fill</span>
+          <div className="auth-demo-box-header">
+            <strong>⚡ Demo Accounts</strong>
+            <span className="auth-demo-badge">Click to fill</span>
           </div>
           <div className="auth-demo-grid">
             <button
@@ -127,7 +130,8 @@ export const LoginPage = () => {
               className="auth-demo-btn"
               onClick={() => handleQuickFill('admin@orderflow.com', 'Admin@1234')}
             >
-              <span className="auth-demo-role">Admin Account</span>
+              <span className="auth-demo-tag admin">Admin</span>
+              <span className="auth-demo-role">System Admin</span>
               <span className="auth-demo-email">admin@orderflow.com</span>
             </button>
             <button
@@ -135,7 +139,8 @@ export const LoginPage = () => {
               className="auth-demo-btn"
               onClick={() => handleQuickFill('pravin@example.com', 'Pass@1234')}
             >
-              <span className="auth-demo-role">Customer Account</span>
+              <span className="auth-demo-tag customer">Customer</span>
+              <span className="auth-demo-role">Pravin Mali</span>
               <span className="auth-demo-email">pravin@example.com</span>
             </button>
           </div>

@@ -76,10 +76,11 @@ export const RegisterPage = () => {
     <div className="auth-container">
       <div className="auth-header">
         <div className="auth-logo">
+          <div className="auth-logo-icon">⚡</div>
           <span>OrderFlow</span>
           <span className="auth-logo-badge">PRO</span>
         </div>
-        <p className="text-secondary text-sm">Create a new customer account</p>
+        <p>Enterprise Order Processing & Fulfillment Service</p>
       </div>
 
       <div className="auth-card" style={{ maxWidth: '480px' }}>
@@ -87,8 +88,9 @@ export const RegisterPage = () => {
         <p className="auth-subtitle">Get started tracking and managing your purchases</p>
 
         {error && (
-          <div className="auth-alert auth-alert-error" role="alert">
-            {error}
+          <div className="auth-alert auth-alert-error" role="alert" style={{ whiteSpace: 'pre-line' }}>
+            <span>⚠️</span>
+            <span>{error}</span>
           </div>
         )}
 
